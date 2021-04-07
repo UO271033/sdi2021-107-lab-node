@@ -64,7 +64,6 @@ module.exports = function(app, swig, gestorBD) {
             if (id == null) {
                 res.send("Error al insertar canción");
             } else {
-                res.send("Agregada id: " + id);
                 if (req.files.portada != null) {
                     let imagen = req.files.portada;
                     imagen.mv('public/portadas/'+ id +'.png', function(err) {
@@ -116,13 +115,22 @@ module.exports = function(app, swig, gestorBD) {
             if ( canciones == null ){
                 res.send("Error al recuperar la canción.");
             } else {
-                let respuesta = swig.renderFile('views/bcancion.html',
-                    {
-                        cancion : canciones[0]
-                    });
-                res.send(respuesta);
+                criterio = { "cancion_id" :  gestorBD.mongo.ObjectID(req.params.id) };
+                gestorBD.obtenerComentarios(criterio,function(comentarios){
+                    if ( comentarios == null ){
+                        res.send("Error al recuperar los comentarios.");
+                    } else {
+                        let respuesta = swig.renderFile('views/bcancion.html',
+                            {
+                                comentarios : comentarios,
+                                cancion : canciones[0]
+                            });
+                        res.send(respuesta);
+                    }
+                });
             }
         });
+
     });
 
     app.get('/cancion/modificar/:id', function (req, res) {
@@ -191,4 +199,22 @@ module.exports = function(app, swig, gestorBD) {
             callback(true); // FIN
         }
     };
+
+    app.post('/comentarios/:cancion_id', function (req, res) {
+        let comentario = {
+            autor : req.session.usuario,
+            texto : req.body.texto,
+            cancion_id: gestorBD.mongo.ObjectID(req.params.cancion_id)
+        }
+        if (req.session.usuario == null) {
+            res.send("No identificado ");
+        }
+        gestorBD.insertarComentario(comentario, function (id) {
+            if (id == null) {
+                res.send("Error al publicar ");
+            } else {
+                res.send("Comentario publicado id: " + id);
+            }
+        });
+    });
 };
