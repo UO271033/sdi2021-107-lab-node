@@ -229,11 +229,19 @@ module.exports = function(app, swig, gestorBD) {
             cancion_id: gestorBD.mongo.ObjectID(req.params.cancion_id)
         }
         if (req.session.usuario == null) {
-            res.send("No identificado ");
+            let respuesta = swig.renderFile('views/error.html',
+                {
+                    mensaje : "No identificado"
+                });
+            res.send(respuesta);
         }
         gestorBD.insertarComentario(comentario, function (id) {
             if (id == null) {
-                res.send("Error al publicar ");
+                let respuesta = swig.renderFile('views/error.html',
+                    {
+                        mensaje : "Error al publicar"
+                    });
+                res.send(respuesta);
             } else {
                 res.send("Comentario publicado id: " + id);
             }
@@ -268,6 +276,12 @@ module.exports = function(app, swig, gestorBD) {
                         res.redirect("/compras");
                     }
                 });
+            } else {
+                let respuesta = swig.renderFile('views/error.html',
+                    {
+                        mensaje : "Error al comprar cancion"
+                    });
+                res.send(respuesta);
             }
         })
 
@@ -292,6 +306,7 @@ module.exports = function(app, swig, gestorBD) {
                             canciones : canciones
                         });
                     res.send(respuesta);
+
                 });
             }
 
@@ -316,5 +331,9 @@ module.exports = function(app, swig, gestorBD) {
 
         });
     }
+
+    app.get('/error', function (req, res) {
+
+    });
 
 };
