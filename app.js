@@ -107,6 +107,8 @@ app.set('crypto',crypto);
 require("./routes/rusuarios.js")(app, swig, gestorBD); // (app, param1, param2, etc.)
 require("./routes/rcanciones.js")(app, swig, gestorBD);
 require("./routes/rautores.js")(app, swig); // (app, param1, param2, etc.)
+require("./routes/rapicanciones.js")(app, gestorBD);
+
 
 app.get('/', function (req, res) {
     res.redirect('/tienda');
