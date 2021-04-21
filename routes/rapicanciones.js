@@ -69,24 +69,33 @@ module.exports = function(app, gestorBD) {
             nombre : req.body.nombre,
             genero : req.body.genero,
             precio : req.body.precio,
+            autor : res.usuario
         }
         // ¿Validar nombre, genero, precio?
-
-        gestorBD.insertarCancion(cancion, function(id){
-            if (id == null) {
-                res.status(500);
+        validaDatosCancion(cancion, function(errors) {
+            if (errors !== null && errors.length > 0) {
+                res.status(403);
                 res.json({
-                    error : "se ha producido un error"
-                })
-            } else {
-                res.status(201);
-                res.json({
-                    mensaje : "canción insertada",
-                    _id : id
+                    errores : errors
                 })
             }
-        });
-
+            else {
+                gestorBD.insertarCancion(cancion, function(id){
+                    if (id == null) {
+                        res.status(500);
+                        res.json({
+                            error : "se ha producido un error"
+                        })
+                    } else {
+                        res.status(201);
+                        res.json({
+                            mensaje : "canción insertada",
+                            _id : id
+                        })
+                    }
+                });
+            }
+        })
     });
 
     app.put("/api/cancion/:id", function(req, res) {
@@ -144,5 +153,19 @@ module.exports = function(app, gestorBD) {
             }
         });
     });
+
+    function validaDatosCancion(cancion, funcionCallback) {
+        let errors = new Array();
+        if (cancion.nombre === null || typeof cancion.nombre === 'undefined' || cancion.nombre === "")
+            errors.push("El nombre de la canción no puede  estar vacio")
+        if (cancion.genero === null || typeof cancion.genero === 'undefined' || cancion.genero === "")
+            errors.push("El género de la canción no puede  estar vacio")
+        if (cancion.precio === null || typeof cancion.precio === 'undefined' || cancion.precio < 0 || cancion.precio === "")
+            errors.push("El precio de la canción no puede ser negativo")
+        if (errors.length <= 0)
+            funcionCallback(null)
+        else
+            funcionCallback(errors)
+    }
 
 }
